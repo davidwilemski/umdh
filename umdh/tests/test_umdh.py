@@ -10,7 +10,6 @@ class SearchMenuForTests(unittest.TestCase):
 
         So. This is the only test for now:
         """
-        print self.blah
         self.assertTrue(
                 umdh.search_menu_for(
                     self.menu,
