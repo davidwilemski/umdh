@@ -12,6 +12,12 @@ To install `umdh`, download this repository and then run
 $ python setup.py install
 ```
 
+To run tests:
+
+```
+$ python setup.py nosetests
+```
+
 To see how to use the command line tool, run:
 
 ```

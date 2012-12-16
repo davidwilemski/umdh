@@ -12,4 +12,5 @@ setup(name='umdh',
       install_requires=[
           'requests',
       ],
+      tests_require=['nose'],
       zip_safe=False)
