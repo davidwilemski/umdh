@@ -33,16 +33,19 @@ def search_menu_for(menu, food):
                         return True
 
 
-def get_menu(url):
+def get_menu_xml(url):
     r = requests.get(url)
-    tree = ET.fromstring(r.text)
+    return r.text
+
+def get_menu(text):
+    tree = ET.fromstring(text)
     return tree
 
 
 def search_all_menus(food):
     results = []
     for key, url in dining_halls.iteritems():
-        if search_menu_for(get_menu(url), food):
+        if search_menu_for(get_menu(get_menu_xml(url)), food):
             results.append(key)
     return results
 
