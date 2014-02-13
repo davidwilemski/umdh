@@ -2,19 +2,16 @@
 
 import requests
 import argparse
-from xml.etree import ElementTree as ET
+import json
 
 
-BASEURL = 'http://www.housing.umich.edu/files/helper_files/js/menu2xml.php?location={}&date=today'
+BASEURL = 'http://www.housing.umich.edu/files/helper_files/js/xml2print.php?location={}&date=today&output=json'
 dining_halls = {
         'barbour': BASEURL.format('BARBOUR%20DINING%20HALL'),
         'bursley': BASEURL.format('BURSLEY%20DINING%20HALL'),
-        'couzens': BASEURL.format('COUZENS%20DINING%20HALL'),
         'east-quad': BASEURL.format('BARBOUR%20DINING%20HALL'),
-        'lloyd': BASEURL.format('LLOYD%20DINING%20HALL'),
         'markley': BASEURL.format('MARKLEY%20DINING%20HALL'),
         'south-quad': BASEURL.format('SOUTH%20QUAD%20DINING%20HALL'),
-        'stockwell': BASEURL.format('STOCKWELL%20DINING%20HALL'),
         'west-quad': BASEURL.format('WEST%20QUAD%20DINING%20HALL'),
         'marketplace': BASEURL.format('MARKETPLACE'),
         'north-quad': BASEURL.format('North%20Quad%20Dining%20Hall'),
@@ -25,27 +22,46 @@ dining_halls = {
 # Todo: Add support for returning the meal that has the food
 # Also: Removing quad for-loop would be fantastic
 def search_menu_for(menu, food):
-    for meal in menu.find('menu').findall('meal'):
-        for station in meal.findall('station'):
-            for course in station.findall('course'):
-                for menuitem in course.findall('menuitem'):
-                    if food.lower() in menuitem.text.strip().lower():
-                        return True
+    if not isinstance(menu, dict):
+        # something isn't right
+        # maybe throw here?
+        #print 'SOMETHING WRONG'
+        return False
+
+    for meal in menu['menu']['meal']:
+        if isinstance(meal['course'], dict):  # some notice
+            #print meal['course']['name'], meal['course']['menuitem']['name']
+            continue
+
+        for course in meal['course']:
+            if isinstance(course, list):
+                print 'we have a list!'
+                continue
+
+            if isinstance(course, str):
+                print 'we have a string!'
+                continue
+
+            if isinstance(course['menuitem'], dict):
+                menuitem = course['menuitem']
+                if food.lower() in menuitem['name'].strip().lower():
+                    return True
+                continue
+
+            for menuitem in course['menuitem']:
+                if food.lower() in menuitem['name'].strip().lower():
+                    return True
 
 
-def get_menu_xml(url):
+def get_menu(url):
     r = requests.get(url)
-    return r.text
-
-def get_menu(text):
-    tree = ET.fromstring(text)
-    return tree
+    return json.loads(r.text)
 
 
 def search_all_menus(food):
     results = []
     for key, url in dining_halls.iteritems():
-        if search_menu_for(get_menu(get_menu_xml(url)), food):
+        if search_menu_for(get_menu(url), food):
             results.append(key)
     return results
 
@@ -60,6 +76,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     results = search_all_menus(args.food)
+    results = search_all_menus("chicken")
 
     if not results:
         print 'Sorry, no {} today! :('.format(args.food)
