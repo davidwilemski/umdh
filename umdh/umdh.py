@@ -28,6 +28,8 @@ def search_menu_for(menu, food):
         #print 'SOMETHING WRONG'
         return False
 
+    results = []
+
     for meal in menu['menu']['meal']:
         if isinstance(meal['course'], dict):  # some notice
             #print meal['course']['name'], meal['course']['menuitem']['name']
@@ -35,23 +37,22 @@ def search_menu_for(menu, food):
 
         for course in meal['course']:
             if isinstance(course, list):
-                print 'we have a list!'
                 continue
 
             if isinstance(course, str):
-                print 'we have a string!'
                 continue
 
             if isinstance(course['menuitem'], dict):
                 menuitem = course['menuitem']
                 if food.lower() in menuitem['name'].strip().lower():
-                    return True
+                    results.append(meal['name'].lower())
                 continue
 
             for menuitem in course['menuitem']:
                 if food.lower() in menuitem['name'].strip().lower():
-                    return True
+                    results.append(meal['name'].lower())
 
+    return results
 
 def get_menu(url):
     r = requests.get(url)
@@ -59,10 +60,11 @@ def get_menu(url):
 
 
 def search_all_menus(food):
-    results = []
+    results = {}
     for key, url in dining_halls.iteritems():
-        if search_menu_for(get_menu(url), food):
-            results.append(key)
+        r = search_menu_for(get_menu(url), food)
+        if r:
+            results[key] = r
     return results
 
 
@@ -75,13 +77,12 @@ if __name__ == '__main__':
         'or "Chocolate Chip Cookies"')
     args = parser.parse_args()
 
-    results = search_all_menus(args.food)
-    results = search_all_menus("chicken")
+    search_results = search_all_menus(args.food)
 
-    if not results:
+    if not search_results:
         print 'Sorry, no {} today! :('.format(args.food)
         exit()
 
     print args.food, 'is at:'
-    for i in results:
+    for i in search_results.items():
         print i
