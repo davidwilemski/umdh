@@ -1,11 +1,12 @@
 #! /usr/bin/env python
 
+import datetime
 import requests
 import argparse
 import json
 
 
-BASEURL = 'http://www.housing.umich.edu/files/helper_files/js/xml2print.php?location={}&date=today&output=json'
+BASEURL = 'http://www.housing.umich.edu/files/helper_files/js/xml2print.php?location={}&output=json'
 dining_halls = {
         'barbour': BASEURL.format('BARBOUR%20DINING%20HALL'),
         'bursley': BASEURL.format('BURSLEY%20DINING%20HALL'),
@@ -17,6 +18,35 @@ dining_halls = {
         'north-quad': BASEURL.format('North%20Quad%20Dining%20Hall'),
         'twigs-at-oxford': BASEURL.format('Twigs%20at%20Oxford'),
 }
+
+locations = [
+    'barbour',
+    'bursley',
+    'east-quad',
+    'markley',
+    'south-quad',
+    'west-quad',
+    'marketplace',
+    'north-quad',
+    'twigs-at-oxford'
+]
+
+def get_menu_url(location, date=None):
+    if location not in locations:
+        return None
+
+    if date is not None and not isinstance(date, datetime.date):
+        return None
+
+    if date is None:
+        date = 'today'
+
+    else:
+        date = date.strftime("%A,%B %d")
+
+    url = dining_halls[location]
+    url = url + "&date=" + date
+    return url
 
 
 # Todo: Add support for returning the meal that has the food
@@ -59,10 +89,10 @@ def get_menu(url):
     return json.loads(r.text)
 
 
-def search_all_menus(food):
+def search_all_menus(food, date=None):
     results = {}
-    for key, url in dining_halls.iteritems():
-        r = search_menu_for(get_menu(url), food)
+    for key in dining_halls.iterkeys():
+        r = search_menu_for(get_menu(get_menu_url(key, date)), food)
         if r:
             results[key] = r
     return results
