@@ -1,6 +1,6 @@
 
 import datetime
-import umdh.umdh
+import umdh
 import unittest
 
 
@@ -30,7 +30,7 @@ class SearchMenuForTests(unittest.TestCase):
         """
         Nasty setup function that stores what a real document looks like
         """
-        url = umdh.umdh.dining_halls['marketplace']
+        url = umdh.dining_halls['marketplace']
         self.menu = umdh.get_menu(url)
 
 if __name__ == '__main__':
